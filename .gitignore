@@ -2,5 +2,10 @@
 
 /.vscode
 
+.coverage
+
+pytest.ini
+
 #Django - Python files
 db.sqlite3
+*__pycache__*
