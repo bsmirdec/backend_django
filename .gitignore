@@ -3,8 +3,11 @@
 /.vscode
 
 .coverage
+/htmlcov
 
 pytest.ini
+
+/.pytest_cache
 
 #Django - Python files
 db.sqlite3

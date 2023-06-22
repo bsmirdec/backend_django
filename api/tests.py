@@ -1,10 +1,10 @@
 from django.test import TestCase
-from django.contrib.auth.models import User
 from django.utils import timezone
 from django.urls import reverse
 from rest_framework import status
-from rest_framework.test import APITestCase, APIClient
+from rest_framework.test import APITestCase
 from .models import Worksite, Client
+from users.models import CustomUser
 
 
 class Test_Create_Worksite(TestCase):
@@ -35,20 +35,24 @@ class Test_Create_Worksite(TestCase):
 class WorksiteTests(APITestCase):
     def test_view_worksites(self):
         self.test_client = Client.objects.create(name="django")
-        self.testuser1 = User.objects.create_superuser(username="test_user1", password="123456789")
-        self.client.login(username=self.testuser1.username, password="123456789")
+        self.testuser1 = CustomUser.objects.create_superuser(
+            email="test1@example.com", first_name="test_name", last_name="test_user1", password="123456789"
+        )
+        self.client.login(email=self.testuser1.email, password="123456789")
 
-        url = reverse("worksitelist")
+        url = reverse("api:worksite-list")
         response = self.client.get(url, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_create_worksite(self):
         self.test_client = Client.objects.create(name="django")
-        self.testuser1 = User.objects.create_superuser(username="test_user1", password="123456789")
-        self.client.login(username=self.testuser1.username, password="123456789")
+        self.testuser1 = CustomUser.objects.create_superuser(
+            email="test1@example.com", first_name="test_name", last_name="test_user1", password="123456789"
+        )
+        self.client.login(email=self.testuser1.email, password="123456789")
 
         data = {"sector": "GO", "name": "test_name", "client_id": 1, "city": "test_city", "adress": "test_adress", "started": timezone.now()}
-        url = reverse("worksitelistcreate")
+        url = reverse("api:worksite-create")
         response = self.client.post(url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
