@@ -1,7 +1,7 @@
 from django.shortcuts import get_object_or_404
 from rest_framework import generics, viewsets, filters
 from rest_framework.response import Response
-from rest_framework.permissions import SAFE_METHODS, IsAdminUser, AllowAny, IsAuthenticated, BasePermission, DjangoModelPermissionsOrAnonReadOnly
+from rest_framework.permissions import SAFE_METHODS, IsAdminUser, IsAuthenticated, BasePermission, DjangoModelPermissionsOrAnonReadOnly
 from .models import Worksite, Client
 from .serializers import WorksiteSerializer, ClientSerializer
 
@@ -14,9 +14,18 @@ from .serializers import WorksiteSerializer, ClientSerializer
 #             return True
 
 
+class MultipleSerializerMixin:
+    detail_serializer_class = None
+
+    def get_serializer_class(self):
+        if self.action == "retrieve" and self.detail_serializer_class is not None:
+            return self.detail_serializer_class
+        return super().get_serializer_class()
+
+
 class ClientList(viewsets.ViewSet):
     queryset = Client.objects.all()
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
 
     def list(self, request):
         serializer_class = ClientSerializer(self.queryset, many=True)
@@ -26,10 +35,6 @@ class ClientList(viewsets.ViewSet):
         client = get_object_or_404(self.queryset, pk=pk)
         serializer_class = ClientSerializer(client)
         return Response(serializer_class.data)
-
-
-class ClientDetail(generics.RetrieveUpdateDestroyAPIView):
-    pass
 
 
 class WorksiteList(viewsets.ModelViewSet):
@@ -42,21 +47,3 @@ class WorksiteList(viewsets.ModelViewSet):
 
     def get_queryset(self):
         return Worksite.objects.all()
-
-
-# class WorksiteList(generics.ListAPIView):
-#     queryset = Worksite.objects.all()
-#     serializer_class = WorksiteSerializer
-#     permission_classes = [IsAuthenticated]
-
-
-# class WorksiteListCreate(generics.ListCreateAPIView):
-#     queryset = Worksite.objects.all()
-#     serializer_class = WorksiteSerializer
-#     permission_classes = [IsAdminUser]
-
-
-# class WorksiteDetail(generics.RetrieveUpdateDestroyAPIView):
-#     queryset = Worksite.objects.all()
-#     serializer_class = WorksiteSerializer
-#     permission_classes = [IsAdminUser]

@@ -1,9 +1,14 @@
 from django.urls import path
-from .views import CustomUserCreate, BlacklistTokenView
+from rest_framework.routers import DefaultRouter
+from .views import UserViewSet, BlacklistTokenView
 
 app_name = "users"
 
+router = DefaultRouter()
+router.register("", UserViewSet, basename="users")
+# router.register("login", LoginViewSet, basename="login")
+
 urlpatterns = [
-    path("create/", CustomUserCreate.as_view(), name="create_user"),
+    *router.urls,
     path("logout/blacklist/", BlacklistTokenView.as_view(), name="blacklist"),
 ]
