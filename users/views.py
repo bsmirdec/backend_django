@@ -62,6 +62,15 @@ class UserViewSet(viewsets.ModelViewSet):
         "last_name",
     )
 
+    def get_permissions(self):
+        if self.action == "create":
+            # Apply AllowAny permission only for the 'create' action
+            permission_classes = [AllowAny]
+        else:
+            # Use the default permission classes for other actions
+            permission_classes = self.permission_classes
+        return [permission() for permission in permission_classes]
+
     # def get_queryset(self):
     #     return CustomUser.objects.all()
 

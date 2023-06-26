@@ -1,10 +1,9 @@
 from django.contrib import admin
-from . import models
+from .models import Client, Worksite, SiteDirector, SiteSupervisor, SiteForeman, Management
 
-
-@admin.register(models.Worksite)
-class AuthorAdmin(admin.ModelAdmin):
-    list_display = ("worksite_id", "name", "sector", "client", "city", "adress", "started", "status")
-
-
-admin.site.register(models.Client)
+admin.site.register(Client)
+admin.site.register(Worksite)
+admin.site.register(SiteDirector)
+admin.site.register(SiteSupervisor)
+admin.site.register(SiteForeman)
+admin.site.register(Management)

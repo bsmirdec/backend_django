@@ -1,5 +1,9 @@
 from django.db import models
 from django.db.models.query import QuerySet
+from django.contrib.auth import get_user_model
+
+
+User = get_user_model()
 
 
 class Client(models.Model):
@@ -31,7 +35,6 @@ class Worksite(models.Model):
     adress = models.CharField(max_length=200)
     started = models.DateField(null=True, blank=True)
     status = models.CharField(max_length=20, choices=status_options, default="etudes")
-    # members = models.ManyToManyField(settings.AUTH_USER_MODEL, through="Management")
 
     objects = models.Manager()
     newobjects = NewWorksite()
@@ -43,8 +46,72 @@ class Worksite(models.Model):
         return f"{self.city} - {self.name}"
 
 
-# class Management(models.Model):
-#     site_director = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.DO_NOTHING)
-#     site_supervisor = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.DO_NOTHING)
-#     site_foreman = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.DO_NOTHING)
-#     worksite = models.ForeignKey(Worksite, on_delete=models.DO_NOTHING)
+class WorkingPosition(models.Model):
+    user = models.OneToOneField(User, on_delete=models.DO_NOTHING)
+
+    class Meta:
+        abstract = True
+
+
+class Administrator(WorkingPosition):
+    def __str__(self):
+        return f"Administrateur: {self.user}"
+
+
+class SiteDirector(WorkingPosition):
+    def __str__(self):
+        return f"Directeur Travaux: {self.user}"
+
+
+class SiteSupervisor(WorkingPosition):
+    responsable = models.ForeignKey(SiteDirector, verbose_name=("responsable"), on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"Conducteur Travaux: {self.user}"
+
+
+class SiteForeman(WorkingPosition):
+    responsable = models.ForeignKey(SiteDirector, verbose_name=("responsable"), on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"Chef Chantier: {self.user}"
+
+
+class Management(models.Model):
+    worksite = models.ForeignKey(Worksite, on_delete=models.DO_NOTHING)
+
+    staff_type = models.CharField(
+        max_length=20,
+        choices=(
+            ("director", "Director"),
+            ("supervisor", "Supervisor"),
+            ("foreman", "Foreman"),
+        ),
+        default="foreman",
+    )
+
+    staff_id = models.PositiveIntegerField(null=True, blank=True)
+
+    def get_staff(self):
+        if self.staff_type == "director":
+            return SiteDirector.objects.filter(id=self.staff_id).first()
+        elif self.staff_type == "supervisor":
+            return SiteSupervisor.objects.filter(id=self.staff_id).first()
+        elif self.staff_type == "foreman":
+            return SiteForeman.objects.filter(id=self.staff_id).first()
+
+    def set_staff(self, staff):
+        if isinstance(staff, SiteDirector):
+            self.staff_type = "director"
+        elif isinstance(staff, SiteSupervisor):
+            self.staff_type = "supervisor"
+        elif isinstance(staff, SiteForeman):
+            self.staff_type = "foreman"
+        else:
+            raise ValueError("Invalid staff type")
+        self.staff_id = staff.id
+
+    staff = property(get_staff, set_staff)
+
+    def __str__(self):
+        return f"{self.staff} est affecté à {self.worksite}"

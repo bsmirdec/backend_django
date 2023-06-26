@@ -1,22 +1,14 @@
-# from django.urls import path
-
-# from .views import WorksiteList, WorksiteListCreate, WorksiteDetail, ClientList, ClientDetail
-
-
-# urlpatterns = [
-#     path("worksite/", WorksiteList.as_view(), name="worksitelist"),
-#     path("worksite/create/", WorksiteListCreate.as_view(), name="worksitelistcreate"),
-#     path("worksite/<int:pk>/", WorksiteDetail.as_view(), name="worksitedetail"),
-#     path("client/", ClientList.as_view({"list", "retrieve"}), name="clientlist"),
-#     path("client/<int:pk>/", ClientDetail.as_view, name="clientdetail"),
-# ]
-
-from rest_framework.routers import DefaultRouter
-from .views import ClientList, WorksiteList
+from django.urls import include, path
+from rest_framework import routers
+from .views import ClientViewSet, WorksiteViewSet, ManagementViewSet
 
 app_name = "api"
 
-router = DefaultRouter()
-router.register("client", ClientList, basename="client")
-router.register("worksite", WorksiteList, basename="worksite")
-urlpatterns = router.urls
+router = routers.DefaultRouter()
+router.register(r"clients", ClientViewSet)
+router.register(r"worksites", WorksiteViewSet)
+router.register(r"management", ManagementViewSet)
+
+urlpatterns = [
+    path("", include(router.urls)),
+]

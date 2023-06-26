@@ -1,49 +1,99 @@
-from django.shortcuts import get_object_or_404
-from rest_framework import generics, viewsets, filters
+from rest_framework import viewsets, status
 from rest_framework.response import Response
-from rest_framework.permissions import SAFE_METHODS, IsAdminUser, IsAuthenticated, BasePermission, DjangoModelPermissionsOrAnonReadOnly
-from .models import Worksite, Client
-from .serializers import WorksiteSerializer, ClientSerializer
+from rest_framework.permissions import IsAdminUser, IsAuthenticated
+from .models import Worksite, Client, Management, WorkingPosition
+from .serializers import WorksiteSerializer, ClientSerializer, ManagementSerializer
+from .permissions import IsAdministrator, IsSiteDirector, IsSiteSupervisor
 
 
-# class WorksiteUserCreatePermission(BasePermission):
-#     message = "Creating and editing is restricted to the boss"
-
-#     def has_object_permission(self, request, view, obj):
-#         if request.method in SAFE_METHODS:
-#             return True
-
-
-class MultipleSerializerMixin:
-    detail_serializer_class = None
-
-    def get_serializer_class(self):
-        if self.action == "retrieve" and self.detail_serializer_class is not None:
-            return self.detail_serializer_class
-        return super().get_serializer_class()
-
-
-class ClientList(viewsets.ViewSet):
+class ClientViewSet(viewsets.ModelViewSet):
     queryset = Client.objects.all()
-    permission_classes = [IsAuthenticated]
-
-    def list(self, request):
-        serializer_class = ClientSerializer(self.queryset, many=True)
-        return Response(serializer_class.data)
-
-    def retrieve(self, request, pk=None):
-        client = get_object_or_404(self.queryset, pk=pk)
-        serializer_class = ClientSerializer(client)
-        return Response(serializer_class.data)
+    serializer_class = ClientSerializer
+    permission_classes = [IsAuthenticated, IsAdministrator | IsAdminUser]
 
 
-class WorksiteList(viewsets.ModelViewSet):
-    permission_classes = [IsAuthenticated]
+class WorksiteViewSet(viewsets.ModelViewSet):
+    queryset = Worksite.objects.all()
     serializer_class = WorksiteSerializer
 
-    def get_object(self, queryset=None, **kwargs):
-        item = self.kwargs.get("pk")
-        return get_object_or_404(Worksite, worksite_id=item)
+    def get_permissions(self):
+        if self.action == "retrieve":
+            permission_classes = [IsAuthenticated | IsAdminUser]
+        elif self.action == "update":
+            permission_classes = [IsAuthenticated, IsSiteDirector | IsAdministrator | IsSiteSupervisor | IsAdminUser]
+        elif self.action == "destroy":
+            permission_classes = [IsAuthenticated, IsAdministrator, IsAdminUser]
+        elif self.action == "create":
+            permission_classes = [IsAuthenticated, IsSiteDirector | IsAdministrator | IsAdminUser]
+        else:
+            permission_classes = [IsAuthenticated | IsAdminUser]
+        return [permission() for permission in permission_classes]
 
-    def get_queryset(self):
-        return Worksite.objects.all()
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        self.perform_destroy(instance)
+        return Response("Le chantier a été supprimé avec succès.", status=status.HTTP_204_NO_CONTENT)
+
+
+class ManagementViewSet(viewsets.ModelViewSet):
+    queryset = Management.objects.all()
+    serializer_class = ManagementSerializer
+    permission_classes = [IsAuthenticated, IsSiteDirector | IsAdministrator | IsAdminUser]
+
+    def create_staff(self, request, *args, **kwargs):
+        management_id = kwargs.get("pk")
+        management = self.get_object()
+        staff_id = request.data.get("staff_id")
+
+        if staff_id is None:
+            return Response("Le paramètre staff_id est manquant", status=status.HTTP_400_BAD_REQUEST)
+
+        staff_model = management.get_staff_model()
+        try:
+            staff = staff_model.objects.get(id=staff_id)
+        except staff_model.DoesNotExist:
+            return Response("Le staff spécifié n'existe pas", status=status.HTTP_404_NOT_FOUND)
+
+        if management.staff is not None:
+            return Response("Un staff est déjà affecté à ce chantier", status=status.HTTP_400_BAD_REQUEST)
+
+        management.staff = staff
+        management.save()
+
+        serializer = self.get_serializer(management)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def update_staff(self, request, *args, **kwargs):
+        management_id = kwargs.get("pk")
+        management = self.get_object()
+        staff_id = request.data.get("staff_id")
+
+        if staff_id is None:
+            return Response("Le paramètre staff_id est manquant", status=status.HTTP_400_BAD_REQUEST)
+
+        staff_model = management.get_staff_model()
+        try:
+            staff = staff_model.objects.get(id=staff_id)
+        except staff_model.DoesNotExist:
+            return Response("Le staff spécifié n'existe pas", status=status.HTTP_404_NOT_FOUND)
+
+        if management.staff != staff:
+            return Response("Le staff spécifié ne correspond pas à celui affecté à ce chantier", status=status.HTTP_400_BAD_REQUEST)
+
+        management.save()
+
+        serializer = self.get_serializer(management)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def delete_staff(self, request, *args, **kwargs):
+        management_id = kwargs.get("pk")
+        management = self.get_object()
+
+        if management.staff is None:
+            return Response("Aucun staff n'est affecté à ce chantier", status=status.HTTP_400_BAD_REQUEST)
+
+        management.staff = None
+        management.save()
+
+        serializer = self.get_serializer(management)
+        return Response(serializer.data, status=status.HTTP_200_OK)
