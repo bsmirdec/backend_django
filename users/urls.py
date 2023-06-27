@@ -6,7 +6,6 @@ app_name = "users"
 
 router = DefaultRouter()
 router.register("", UserViewSet, basename="users")
-# router.register("login", LoginViewSet, basename="login")
 
 urlpatterns = [
     *router.urls,

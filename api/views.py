@@ -13,8 +13,17 @@ class ClientViewSet(viewsets.ModelViewSet):
 
 
 class WorksiteViewSet(viewsets.ModelViewSet):
-    queryset = Worksite.objects.all()
     serializer_class = WorksiteSerializer
+
+    def get_queryset(self):
+        user = self.request.user
+        if user.is_superuser or user.has_perm("api.IsAdministrator"):
+            # Si l'utilisateur est un superutilisateur ou a la permission spécifique pour voir les chantiers
+            queryset = Worksite.objects.all()
+        else:
+            # Filtrer les chantiers en fonction de l'utilisateur dans la table Management
+            queryset = Worksite.objects.filter(management__user_id=user.id)
+        return queryset
 
     def get_permissions(self):
         if self.action == "retrieve":

@@ -10,11 +10,10 @@ class UserAdminConfig(UserAdmin):
     search_fields = ("email", "first_name", "last_name")
     list_filter = ("email", "first_name", "last_name", "is_active", "is_staff")
     ordering = ("last_name",)
-    list_display = ("email", "first_name", "last_name", "is_active", "is_staff")
+    list_display = ("id", "email", "first_name", "last_name", "is_active", "is_staff")
     fieldsets = (
         (None, {"fields": ("email", "first_name", "last_name")}),
         ("Permissions", {"fields": ("is_staff", "is_active")}),
-        ("Personal", {"fields": ("about",)}),
     )
     formfield_overrides = {
         models.TextField: {"widget": Textarea(attrs={"rows": 20, "cols": 60})},

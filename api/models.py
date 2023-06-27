@@ -47,7 +47,7 @@ class Worksite(models.Model):
 
 
 class WorkingPosition(models.Model):
-    user = models.OneToOneField(User, on_delete=models.DO_NOTHING)
+    user = models.OneToOneField(User, on_delete=models.DO_NOTHING, primary_key=True)
 
     class Meta:
         abstract = True
@@ -79,7 +79,6 @@ class SiteForeman(WorkingPosition):
 
 class Management(models.Model):
     worksite = models.ForeignKey(Worksite, on_delete=models.DO_NOTHING)
-
     staff_type = models.CharField(
         max_length=20,
         choices=(
@@ -89,16 +88,15 @@ class Management(models.Model):
         ),
         default="foreman",
     )
-
-    staff_id = models.PositiveIntegerField(null=True, blank=True)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
 
     def get_staff(self):
         if self.staff_type == "director":
-            return SiteDirector.objects.filter(id=self.staff_id).first()
+            return SiteDirector.objects.filter(user=self.user).first()
         elif self.staff_type == "supervisor":
-            return SiteSupervisor.objects.filter(id=self.staff_id).first()
+            return SiteSupervisor.objects.filter(user=self.user).first()
         elif self.staff_type == "foreman":
-            return SiteForeman.objects.filter(id=self.staff_id).first()
+            return SiteForeman.objects.filter(user=self.user).first()
 
     def set_staff(self, staff):
         if isinstance(staff, SiteDirector):
@@ -109,7 +107,7 @@ class Management(models.Model):
             self.staff_type = "foreman"
         else:
             raise ValueError("Invalid staff type")
-        self.staff_id = staff.id
+        self.user = staff.user
 
     staff = property(get_staff, set_staff)
 

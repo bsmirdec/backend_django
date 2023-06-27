@@ -6,7 +6,7 @@ app_name = "api"
 
 router = routers.DefaultRouter()
 router.register(r"clients", ClientViewSet)
-router.register(r"worksites", WorksiteViewSet)
+router.register(r"worksites", WorksiteViewSet, basename="worksites")
 router.register(r"management", ManagementViewSet)
 
 urlpatterns = [

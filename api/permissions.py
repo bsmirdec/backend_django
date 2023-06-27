@@ -7,11 +7,17 @@ class IsSiteDirector(BasePermission):
         user = request.user
         return SiteDirector.objects.filter(user=user).exists()
 
+    def __str__(self):
+        return "IsSiteDirector"
+
 
 class IsSiteSupervisor(BasePermission):
     def has_permission(self, request, view):
         user = request.user
         return SiteSupervisor.objects.filter(user=user).exists()
+
+    def __str__(self):
+        return "IsSiteSupervisor"
 
 
 class IsSiteForeman(BasePermission):
@@ -19,11 +25,17 @@ class IsSiteForeman(BasePermission):
         user = request.user
         return SiteForeman.objects.filter(user=user).exists()
 
+    def __str__(self):
+        return "IsSiteForeman"
+
 
 class IsAdministrator(BasePermission):
     def has_permission(self, request, view):
         user = request.user
         return Administrator.objects.filter(user=user).exists()
+
+    def __str__(self):
+        return "IsAdministrator"
 
 
 class IsExternal(BasePermission):
@@ -35,3 +47,6 @@ class IsExternal(BasePermission):
             or IsSiteForeman().has_permission(request, view)
             or Administrator().has_permission(request, view)
         )
+
+    def __str__(self):
+        return "IsExternal"
