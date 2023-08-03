@@ -44,7 +44,7 @@ INSTALLED_APPS = [
     "rest_framework_simplejwt.token_blacklist",
     "corsheaders",
     "api.apps.ApiConfig",
-    "users.apps.UsersConfig",
+    "authentication.apps.AuthenticationConfig",
 ]
 
 MIDDLEWARE = [
@@ -133,13 +133,14 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 REST_FRAMEWORK = {
     "DEFAULT_SCHEMA_CLASS": "rest_framework.schemas.coreapi.AutoSchema",
-    "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.IsAuthenticatedOrReadOnly"],
-    "DEFAULT_AUTHENTICATION_CLASSES": ("rest_framework_simplejwt.authentication.JWTAuthentication",),
+    "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.AllowAny"],
+    "DEFAULT_AUTHENTICATION_CLASSES": ("authentication.tokens.authentication.MyCustomJWTAuthentication",),
+    "USER_ID_FIELD": "user_id",
 }
 
-CORS_ALLOWED_ORIGINS = ["http://localhost:3000", "http://172.30.1.255"]
+CORS_ALLOWED_ORIGINS = ["http://localhost:3000", "http://172.30.1.40", "http://172.30.1.254"]
 
-AUTH_USER_MODEL = "users.CustomUser"
+AUTH_USER_MODEL = "authentication.CustomUser"
 
 
 SIMPLE_JWT = {
@@ -149,9 +150,18 @@ SIMPLE_JWT = {
     "BLACKLIST_AFTER_ROTATION": True,
     "SIGNING_KEY": SECRET_KEY,
     "VERIFYING_KEY": None,
-    "AUTH_HEADER_TYPES": ("JWT"),
-    "USER_ID_FIELD": "id",
+    "AUTH_HEADER_TYPES": ("JWT",),
+    "USER_ID_FIELD": "user_id",
     "USER_ID_CLAIM": "user_id",
     "AUTH_TOKEN_CLASSES": ("rest_framework_simplejwt.tokens.AccessToken",),
     "TOKEN_TYPE_CLAIM": "token_type",
 }
+
+# EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+
+# EMAIL_HOST = "smtp.gmail.com"
+# EMAIL_PORT = 587
+# EMAIL_USE_TLS = True
+# EMAIL_HOST_USER = "cobapp.api@gmail.com"
+# EMAIL_HOST_PASSWORD = "cobapp-password"
+# DEFAULT_FROM_EMAIL = "cobapp.api@gmail.com"

@@ -1,14 +1,12 @@
-from django.urls import include, path
+from django.urls import path, include
 from rest_framework import routers
-from .views import ClientViewSet, WorksiteViewSet, ManagementViewSet
-
-app_name = "api"
+from .permissions.views import PermissionsViewListAPI
 
 router = routers.DefaultRouter()
-router.register(r"clients", ClientViewSet)
-router.register(r"worksites", WorksiteViewSet, basename="worksites")
-router.register(r"management", ManagementViewSet)
 
 urlpatterns = [
+    path("permissions", PermissionsViewListAPI.as_view(), name="permissions"),
+    path("worksites/", include("api.worksites.urls"), name="worksites"),
+    path("employees/", include("api.employees.urls"), name="employees"),
     path("", include(router.urls)),
 ]
