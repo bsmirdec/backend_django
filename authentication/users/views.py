@@ -16,6 +16,7 @@ from .selectors import user_get, user_list, user_get_employee, user_get_permissi
 from .serializers import UserInputSerializer, UserOutputSerializer
 from ..contact_admin import EMAIL_ADMIN
 from api.permissions.CRUDpermissions import CustomPermissionMixin
+from api.employees.serializers import EmployeeOutputSerializer
 
 
 class UpdateOwnAccount(BasePermission):
@@ -81,6 +82,21 @@ class UserGetPermissions(APIView):
         try:
             permissions = user_get_permissions(pk=pk)
             return Response(permissions)
+        except CustomUser.DoesNotExist:
+            return Response({"message": "L'utilisateur avec l'ID fourni n'existe pas."}, status=status.HTTP_404_NOT_FOUND)
+
+
+class UserGetEmployee(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request, pk, *args, **kwargs):
+        try:
+            employee = user_get_employee(pk=pk)
+            if employee is not None:
+                serializer = EmployeeOutputSerializer(employee)
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            else:
+                return Response({"message": "La création du compte n'a pas été validée."}, status=status.HTTP_404_NOT_FOUND)
         except CustomUser.DoesNotExist:
             return Response({"message": "L'utilisateur avec l'ID fourni n'existe pas."}, status=status.HTTP_404_NOT_FOUND)
 

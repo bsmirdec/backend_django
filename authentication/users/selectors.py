@@ -21,11 +21,10 @@ def user_get_employee(pk):
     l'utilisateur ne peut pas récupérer ses informations, et donc ses permissions"""
     user = user_get(pk)
     if user.is_validated:  # La fusion est-elle validée par un admin ?
-        if user.employee is not None and user.employee.pk is not None:
-            employee = Employee.objects.get(pk=user.employee.pk)
-            return employee
-        else:  # Sans validation, pas possible de récupérer son compte salarié
-            return None
+        if user.employee is not None:
+            return user.employee
+    else:  # Sans validation, pas possible de récupérer son compte salarié
+        return None
 
 
 def user_get_permissions(pk):

@@ -145,7 +145,7 @@ class CustomUserSelectorTestCase(TestCase):
         self.user.employee = employee
         self.user.save()
 
-        result_employee = user_get_employee(user_id=self.user.pk)
+        result_employee = user_get_employee(pk=self.user.pk)
         self.assertEqual(result_employee, employee)
 
     def test_user_get_permissions(self):
@@ -156,9 +156,10 @@ class CustomUserSelectorTestCase(TestCase):
             first_name="John", last_name="Doe", position="site_foreman", permissions=json.dumps({"can_view": True, "can_edit": False})
         )
         self.user.employee = employee
+        print(employee)
         self.user.save()
 
-        permissions = user_get_permissions(user_id=self.user.pk)
+        permissions = user_get_permissions(pk=self.user.pk)
         self.assertEqual(permissions, {"can_view": True, "can_edit": False})
 
 

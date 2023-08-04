@@ -52,7 +52,7 @@ class Employee(BaseModel):
         pass
 
     def __str__(self):
-        return f"{self.first_name} {self.last_name} {self.position}"
+        return f"{self.first_name} {self.last_name} {self.get_position_display()}"
 
     def save(self, *args, **kwargs):
         if not self.permissions:
