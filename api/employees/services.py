@@ -9,7 +9,8 @@ def employee_create(validated_data):
     return employee
 
 
-def employee_update(employee, validated_data):
+def employee_update(pk, validated_data):
+    employee = Employee.objects.get(pk=pk)
     for key, value in validated_data.items():
         setattr(employee, key, value)
     employee.save()

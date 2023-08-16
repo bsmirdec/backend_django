@@ -139,6 +139,9 @@ REST_FRAMEWORK = {
 }
 
 CORS_ALLOWED_ORIGINS = ["http://localhost:3000", "http://172.30.1.40", "http://172.30.1.254"]
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_METHODS = ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]
+CORS_ALLOW_HEADERS = ["Authorization", "Content-Type"]
 
 AUTH_USER_MODEL = "authentication.CustomUser"
 
@@ -155,6 +158,8 @@ SIMPLE_JWT = {
     "USER_ID_CLAIM": "user_id",
     "AUTH_TOKEN_CLASSES": ("rest_framework_simplejwt.tokens.AccessToken",),
     "TOKEN_TYPE_CLAIM": "token_type",
+    "SLIDING_TOKEN_REFRESH_EXP_CLAIM": "refresh_exp",
+    "SLIDING_TOKEN_LIFETIME": timedelta(minutes=5),
 }
 
 # EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"

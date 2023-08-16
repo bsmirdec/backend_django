@@ -15,7 +15,8 @@ def user_create(data):
 
 
 def normalize_name(name):
-    normalized_name = unidecode(name.lower())
+    normalized_name = name.replace("-", " ")
+    normalized_name = unidecode(normalized_name.lower())
     return normalized_name
 
 

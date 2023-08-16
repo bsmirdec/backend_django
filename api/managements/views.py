@@ -1,0 +1,83 @@
+from django.db import IntegrityError
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
+
+from .services import management_create, management_delete
+from .selectors import management_list, management_get, get_employee_for_worksite, get_worksite_for_employee
+from ..permissions.CRUDpermissions import CustomPermissionMixin
+from .serializers import ManagementSerializer
+from ..worksites.models import Worksite
+from ..employees.models import Employee
+
+
+class ManagementViewListAPI(CustomPermissionMixin, APIView):
+    def get(self, request):
+        if self.has_permission(self, request):
+            managements = management_list()
+            serializer = ManagementSerializer(managements, many=True)
+            return Response(serializer.data)
+        else:
+            return Response("Permission denied", status=status.HTTP_403_FORBIDDEN)
+
+
+class ManagementRetrieveObjectAPI(CustomPermissionMixin, APIView):
+    def get(self, request, worksite, employee):
+        if self.has_permission(self, request):
+            management = management_get(worksite, employee)
+            serializer = ManagementSerializer(management)
+            return Response(serializer.data)
+        else:
+            return Response("Permission denied", status=status.HTTP_403_FORBIDDEN)
+
+
+class ManagementCreateObjectAPI(CustomPermissionMixin, APIView):
+    def post(self, request):
+        if self.has_permission(request, self):
+            serializer = ManagementSerializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+
+            try:
+                management = management_create(serializer.validated_data["worksite_id"], serializer.validated_data["employee_id"])
+            except IntegrityError:
+                return Response({"detail": "Cet enregistrement existe déjà."}, status=status.HTTP_400_BAD_REQUEST)
+
+            if management is not None:
+                response_data = ManagementSerializer(management).data
+                return Response(response_data, status=status.HTTP_201_CREATED)
+            else:
+                return Response("Chantier ou employé introuvable.", status=status.HTTP_404_NOT_FOUND)
+        else:
+            return Response("Permission denied", status=status.HTTP_403_FORBIDDEN)
+
+
+class ManagementDeleteObjectAPI(CustomPermissionMixin, APIView):
+    def delete(self, request, worksite_id, employee_id):
+        if self.has_permission(request, self):
+            management_delete(worksite_id=worksite_id, employee_id=employee_id)
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        else:
+            return Response("Permission denied", status=status.HTTP_403_FORBIDDEN)
+
+
+class GetWorksiteForEmployeeAPI(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, employee_id):
+        try:
+            worksites = get_worksite_for_employee(employee_id=employee_id)
+            return Response(worksites, status=status.HTTP_200_OK)
+        except Employee.DoesNotExist:
+            return Response({"error": "Employee not found"}, status=status.HTTP_404_NOT_FOUND)
+
+
+class GetEmployeeForWorksiteAPI(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, worksite_id):
+        try:
+            employees = get_employee_for_worksite(worksite_id=worksite_id)
+            return Response(employees, status=status.HTTP_200_OK)
+        except Worksite.DoesNotExist:
+            return Response({"error": "Worksite not found"}, status=status.HTTP_404_NOT_FOUND)

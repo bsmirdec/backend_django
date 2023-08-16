@@ -6,12 +6,14 @@ from .views import (
     WorksiteDeleteObjectAPI,
     WorksiteRetrieveObjectAPI,
     WorksiteViewListAPI,
+    WorksiteOptionsAPI,
 )
 
 router = routers.DefaultRouter()
 
 urlpatterns = [
     path("", WorksiteViewListAPI.as_view(), name="worksites"),
+    path("options", WorksiteOptionsAPI.as_view(), name="worksite-options"),
     path("create", WorksiteCreateObjectAPI.as_view(), name="worksite_create"),
     path("<int:pk>/get", WorksiteRetrieveObjectAPI.as_view(), name="worksite-get"),
     path("<int:pk>/update", WorksiteUpdateObjectAPI.as_view(), name="worksite-update"),

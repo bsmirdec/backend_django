@@ -7,6 +7,7 @@ from .views import (
     UserMatchEmployeeAPI,
     UserGetPermissions,
     UserGetEmployee,
+    UserGetStaff,
     UserUpdateAPI,
     UserDeleteAPI,
 )
@@ -20,6 +21,7 @@ urlpatterns = [
     path("<int:pk>/get", UserRetrieveAPI.as_view(), name="user-get"),
     path("<int:pk>/permissions", UserGetPermissions.as_view(), name="user-permissions"),
     path("<int:pk>/employee", UserGetEmployee.as_view(), name="user-employee"),
+    path("<int:pk>/staff", UserGetStaff.as_view(), name="user-staff"),
     path("<int:pk>/update", UserUpdateAPI.as_view(), name="user-update"),
     path("<int:pk>/delete", UserDeleteAPI.as_view(), name="user-delete"),
     path("", include(router.urls)),

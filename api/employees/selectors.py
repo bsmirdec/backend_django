@@ -1,8 +1,7 @@
 from .models import Employee
 
 
-def employee_list(user):
-    user.get
+def employee_list():
     return Employee.objects.all()
 
 
@@ -16,4 +15,5 @@ def employee_get(pk):
 
 def get_staff_for_manager(self, manager):
     employees = Employee.objects.filter(manager=manager)
+    print(employees)
     return employees

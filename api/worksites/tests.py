@@ -12,7 +12,7 @@ class WorksiteModelTests(TestCase):
         self.worksite_data = {
             "sector": "GO",
             "name": "Example Worksite",
-            "adress": "Example Address",
+            "address": "Example Address",
             "postal_code": 12345,
             "city": "Example City",
             "started": date(2023, 7, 1),
@@ -29,7 +29,7 @@ class WorksiteModelTests(TestCase):
         worksite_data = {
             "sector": "GO",
             "name": "Valid Worksite",
-            "adress": "Example Address",
+            "address": "Example Address",
             "postal_code": 12345,
             "city": "Example City",
             "started": date(2023, 7, 1),
@@ -44,7 +44,7 @@ class WorksiteModelTests(TestCase):
         worksite_data = {
             "sector": "GO",
             "name": "Invalid Worksite",
-            "adress": "Example Address",
+            "address": "Example Address",
             "postal_code": 12345,
             "city": "Example City",
             "started": date(2023, 8, 1),
@@ -63,7 +63,7 @@ class WorksiteModelTests(TestCase):
         worksite_data = {
             "sector": "GO",
             "name": "Terminated Worksite",
-            "adress": "Example Address",
+            "address": "Example Address",
             "postal_code": 12345,
             "city": "Example City",
             "started": date(2023, 7, 1),
@@ -81,7 +81,7 @@ class WorksiteModelTests(TestCase):
         worksite_data = {
             "sector": "GO",
             "name": "Postal Code Test",
-            "adress": "Example Address",
+            "address": "Example Address",
             "postal_code": 54321,  # Code postal valide (5 chiffres)
             "city": "Example City",
             "started": date(2023, 7, 1),
@@ -96,7 +96,7 @@ class WorksiteModelTests(TestCase):
         worksite_data = {
             "sector": "GO",
             "name": "Postal Code Test",
-            "adress": "Example Address",
+            "address": "Example Address",
             "postal_code": 5432,  # Code postal invalide (moins de 5 chiffres)
             "city": "Example City",
             "started": date(2023, 7, 1),
@@ -113,7 +113,7 @@ class WorksiteModelTests(TestCase):
         worksite_data = {
             "sector": "GO",
             "name": "Postal Code Test",
-            "adress": "Example Address",
+            "address": "Example Address",
             "postal_code": "ABCDE",  # Code postal invalide (lettres au lieu de chiffres)
             "city": "Example City",
             "started": date(2023, 7, 1),
@@ -134,7 +134,7 @@ class WorksiteViewsTests(APITestCase):
         self.worksite_data = {
             "sector": "Example Sector",
             "name": "Example Worksite",
-            "adress": "Example Address",
+            "address": "Example Address",
             "postal_code": 12345,
             "city": "Example City",
             "started": "2023-07-01",

@@ -1,22 +1,17 @@
-from django.utils import timezone
 from django.db import IntegrityError
-from django.core.mail import send_mail
-from django.utils.translation import gettext_lazy as _
 
 from rest_framework import status, serializers
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.permissions import AllowAny, IsAuthenticated, IsAdminUser, BasePermission, SAFE_METHODS
-from rest_framework.exceptions import ParseError
+from rest_framework.permissions import AllowAny, IsAdminUser, BasePermission, SAFE_METHODS
 
 
 from .models import CustomUser
-from .services import user_create, user_update, user_delete, user_confirmation, user_link_to_employee
-from .selectors import user_get, user_list, user_get_employee, user_get_permissions
+from .services import user_create, user_update, user_delete, user_link_to_employee
+from .selectors import user_get, user_list, user_get_employee, user_get_permissions, user_get_staff
 from .serializers import UserInputSerializer, UserOutputSerializer
-from ..contact_admin import EMAIL_ADMIN
-from api.permissions.CRUDpermissions import CustomPermissionMixin
 from api.employees.serializers import EmployeeOutputSerializer
+from ..tokens.permissions import IsJWTAuthenticated
 
 
 class UpdateOwnAccount(BasePermission):
@@ -76,18 +71,29 @@ class UserConfirmAccountAPI(APIView):
 
 
 class UserGetPermissions(APIView):
-    permission_classes = [AllowAny]
+    permission_classes = [IsJWTAuthenticated]
+
+    class PermissionsSerializer(serializers.JSONField):
+        def to_representation(self, value):
+            # Convertir le JSON en dictionnaire Python
+            permissions_dict = super().to_representation(value)
+            return permissions_dict
+
+        def to_internal_value(self, data):
+            # Convertir le dictionnaire Python en JSON
+            return super().to_internal_value(data)
 
     def get(self, request, pk):
         try:
             permissions = user_get_permissions(pk=pk)
-            return Response(permissions)
+            response_data = self.PermissionsSerializer(permissions)
+            return Response(response_data)
         except CustomUser.DoesNotExist:
             return Response({"message": "L'utilisateur avec l'ID fourni n'existe pas."}, status=status.HTTP_404_NOT_FOUND)
 
 
 class UserGetEmployee(APIView):
-    permission_classes = [AllowAny]
+    permission_classes = [IsJWTAuthenticated]
 
     def get(self, request, pk, *args, **kwargs):
         try:
@@ -97,6 +103,21 @@ class UserGetEmployee(APIView):
                 return Response(serializer.data, status=status.HTTP_200_OK)
             else:
                 return Response({"message": "La création du compte n'a pas été validée."}, status=status.HTTP_404_NOT_FOUND)
+        except CustomUser.DoesNotExist:
+            return Response({"message": "L'utilisateur avec l'ID fourni n'existe pas."}, status=status.HTTP_404_NOT_FOUND)
+
+
+class UserGetStaff(APIView):
+    permission_classes = [IsJWTAuthenticated]
+
+    def get(self, request, pk, *args, **kwargs):
+        try:
+            staff = user_get_staff(pk=pk)
+            if staff is not None:
+                serializer = EmployeeOutputSerializer(staff, many=True)
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            else:
+                return Response({"message": "L'utilisateur n'est pas manager"}, status=status.HTTP_404_NOT_FOUND)
         except CustomUser.DoesNotExist:
             return Response({"message": "L'utilisateur avec l'ID fourni n'existe pas."}, status=status.HTTP_404_NOT_FOUND)
 

@@ -8,5 +8,6 @@ urlpatterns = [
     path("permissions", PermissionsViewListAPI.as_view(), name="permissions"),
     path("worksites/", include("api.worksites.urls"), name="worksites"),
     path("employees/", include("api.employees.urls"), name="employees"),
+    path("managements/", include("api.managements.urls"), name="managements"),
     path("", include(router.urls)),
 ]

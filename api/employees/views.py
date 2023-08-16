@@ -1,8 +1,7 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import serializers
 from rest_framework import status
-from .models import Employee
+from rest_framework.permissions import IsAuthenticated
 
 from .services import employee_create, employee_delete, employee_update
 from .selectors import employee_get, employee_list, get_staff_for_manager
@@ -11,49 +10,35 @@ from .serializers import EmployeeInputSerializer, EmployeeOutputSerializer
 
 
 class EmployeeViewListAPI(CustomPermissionMixin, APIView):
-    class EmployeeOutputSerializer(serializers.Serializer):
-        employee_id = serializers.IntegerField()
-        first_name = serializers.CharField()
-        last_name = serializers.CharField()
-        position = serializers.ChoiceField(choices=Employee.positions_options)
-        manager = serializers.PrimaryKeyRelatedField(queryset=Employee.objects.all())
-        permissions = serializers.DictField()
-
-    def get(self, request, user):
-        if self.has_permission(self, request, user):
-            employees = employee_list(user)
-            serializer = self.EmployeeOutputSerializer(employees, many=True)
+    def get(self, request):
+        if self.has_permission(request, self):
+            employees = employee_list()
+            serializer = EmployeeOutputSerializer(employees, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
 
         return Response("Permission denied", status=status.HTTP_403_FORBIDDEN)
 
 
-class EmployeeRetrieveObjectAPI(CustomPermissionMixin, APIView):
-    class EmployeeOutputSerializer(serializers.Serializer):
-        employee_id = serializers.IntegerField()
-        first_name = serializers.CharField()
-        last_name = serializers.CharField()
-        position = serializers.ChoiceField(choices=Employee.positions_options)
-        manager = serializers.PrimaryKeyRelatedField(queryset=Employee.objects.all())
-        permissions = serializers.DictField()
+class SiteDirectorsViewListAPI(CustomPermissionMixin, APIView):
+    permission_classes = [IsAuthenticated]
 
-    def get(self, request, pk, user):
-        if self.has_permission(self, request, pk, user):
+    def get(self, request):
+        employees = employee_list().filter(position="site_director")
+        serializer = EmployeeOutputSerializer(employees, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class EmployeeRetrieveObjectAPI(CustomPermissionMixin, APIView):
+    def get(self, request, pk):
+        if self.has_permission(request, self):
             employee = employee_get(pk)
-            serializer = self.EmployeeOutputSerializer(employee)
+            serializer = EmployeeOutputSerializer(employee)
             return Response(serializer.data, status=status.HTTP_200_OK)
 
         return Response("Permission denied", status=status.HTTP_403_FORBIDDEN)
 
 
 class EmployeeCreateObjectAPI(CustomPermissionMixin, APIView):
-    class EmployeeInputSerializer(serializers.Serializer):
-        first_name = serializers.CharField()
-        last_name = serializers.CharField()
-        position = serializers.ChoiceField(choices=Employee.positions_options)
-        manager = serializers.PrimaryKeyRelatedField(queryset=Employee.objects.all())
-        permissions = serializers.DictField()
-
     def post(self, request):
         if self.has_permission(self, request):
             serializer = EmployeeInputSerializer(data=request.data)
@@ -68,16 +53,8 @@ class EmployeeCreateObjectAPI(CustomPermissionMixin, APIView):
 
 
 class EmployeeUpdateObjectAPI(CustomPermissionMixin, APIView):
-    class EmployeeOutputSerializer(serializers.Serializer):
-        employee_id = serializers.IntegerField()
-        first_name = serializers.CharField()
-        last_name = serializers.CharField()
-        position = serializers.ChoiceField(choices=Employee.positions_options)
-        manager = serializers.PrimaryKeyRelatedField(queryset=Employee.objects.all())
-        permissions = serializers.DictField()
-
     def put(self, request, pk):
-        if self.has_permission(self, request):
+        if self.has_permission(request, self):
             serializer = EmployeeInputSerializer(data=request.data)
             if serializer.is_valid():
                 employee = employee_update(pk=pk, validated_data=serializer.validated_data)
@@ -100,8 +77,10 @@ class EmployeeDeleteObjectAPI(CustomPermissionMixin, APIView):
 
 
 class GetStaffAPI(EmployeeViewListAPI):
+    permission_classes = [IsAuthenticated]
+
     def get(self, request):
-        user = request.user  # Obtenez l'utilisateur en cours à partir de la requête
+        user = request.user
         employees = get_staff_for_manager(user)
-        serializer = self.EmployeeOutputSerializer(employees, many=True)
+        serializer = EmployeeOutputSerializer(employees, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)

@@ -1,5 +1,7 @@
 import re
 from rest_framework.permissions import BasePermission
+from rest_framework.response import Response
+from rest_framework import status
 
 from authentication.tokens.authentication import MyCustomJWTAuthentication
 
@@ -7,24 +9,36 @@ from ..employees.models import Employee
 
 
 def camel_case_to_snake_case(name):
-    result = re.sub("([a-z0-9])([A-Z])", r"\1_\2", name)
-    return result.lower()
+    s1 = re.sub("(.)([A-Z][a-z]+)", r"\1_\2", name)
+    return re.sub("([a-z0-9])([A-Z])", r"\1_\2", s1).lower()
 
 
 class CustomPermissionMixin(BasePermission):
-    authentication_classes = [MyCustomJWTAuthentication]
+    def get_user_from_token(self, request):
+        jwt_authentication = MyCustomJWTAuthentication()
+        user_and_token = jwt_authentication.authenticate(request)
+        if user_and_token is not None:
+            user, _ = user_and_token
+            return user
+        return None
 
     def get_employee(self, request):
-        try:
-            return Employee.objects.get(user=request.user)
-        except Employee.DoesNotExist:
-            return None
+        user = self.get_user_from_token(request)
+        if user is not None:
+            try:
+                return Employee.objects.get(employee_id=user.employee.pk)
+            except Employee.DoesNotExist:
+                return None
+        return None
 
     def has_permission(self, request, view):
+        user = self.get_user_from_token(request)
+        if user is None:
+            return Response({"detail": "Votre jeton d'accès n'est plus valide."}, status=status.HTTP_401_UNAUTHORIZED)
         employee = self.get_employee(request)
         if not employee:
             return False
-        permission_name = camel_case_to_snake_case(view.__class__.__name__)
+        permission_name = camel_case_to_snake_case(view.__class__.__name__)[:-4]
         return employee.has_permission(permission_name=permission_name)
 
 

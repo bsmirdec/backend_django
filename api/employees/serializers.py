@@ -1,5 +1,6 @@
 from rest_framework import serializers
 
+from ..serializers import ChoiceDisplayField
 from .models import Employee
 
 
@@ -15,10 +16,12 @@ class PermissionsSerializer(serializers.JSONField):
 
 
 class EmployeeInputSerializer(serializers.Serializer):
+    employee_id = serializers.IntegerField()
     first_name = serializers.CharField()
     last_name = serializers.CharField()
-    position = serializers.ChoiceField(choices=Employee.positions_options)
-    manager = serializers.PrimaryKeyRelatedField(queryset=Employee.objects.all())
+    position = ChoiceDisplayField(choices=Employee.positions_options)
+    is_current = serializers.BooleanField()
+    manager = serializers.PrimaryKeyRelatedField(queryset=Employee.objects.all(), required=False)
     permissions = PermissionsSerializer()
 
 
@@ -26,7 +29,7 @@ class EmployeeOutputSerializer(serializers.Serializer):
     employee_id = serializers.IntegerField()
     first_name = serializers.CharField()
     last_name = serializers.CharField()
-    position = serializers.ChoiceField(choices=Employee.positions_options)
+    position = ChoiceDisplayField(choices=Employee.positions_options)
     is_current = serializers.BooleanField()
-    manager = serializers.PrimaryKeyRelatedField(queryset=Employee.objects.all())
+    manager = serializers.PrimaryKeyRelatedField(queryset=Employee.objects.all(), required=False)
     permissions = PermissionsSerializer()

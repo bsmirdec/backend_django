@@ -20,7 +20,7 @@ class Employee(BaseModel):
     last_name = models.CharField(max_length=50)
     position = models.CharField(max_length=50, choices=positions_options, default="site_foreman")
     is_current = models.BooleanField(default=True)
-    manager = models.ForeignKey("self", related_name="staff", on_delete=models.DO_NOTHING, blank=True, null=True)
+    manager = models.ForeignKey("self", related_name="staff", on_delete=models.SET_NULL, blank=True, null=True)
     permissions = models.JSONField(blank=True, null=True)
 
     def set_permissions(self, permission_dict):
@@ -30,6 +30,8 @@ class Employee(BaseModel):
             self.permissions = json.dumps({})
 
     def get_permissions(self):
+        if isinstance(self.permissions, dict):
+            return self.permissions
         if self.permissions:
             try:
                 return json.loads(self.permissions)
@@ -45,7 +47,7 @@ class Employee(BaseModel):
     def set_default_permissions(self):
         """Permissions par défaut correspondantes au poste associé"""
         position_permissions = PERMISSIONS_BY_POSITION.get(self.position, {})
-        self.permissions = json.dumps(position_permissions)
+        self.permissions = position_permissions
 
     def set_inactive(self):
         """Rendre l'employé inactif, ainsi que l'user"""

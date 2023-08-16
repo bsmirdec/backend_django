@@ -39,3 +39,17 @@ def user_get_permissions(pk):
         raise ObjectDoesNotExist
     except CustomUser.DoesNotExist:
         raise ObjectDoesNotExist
+
+
+def user_get_staff(pk):
+    try:
+        employee = user_get_employee(pk)
+        if employee is not None:
+            staff = Employee.objects.filter(manager=employee)
+            return staff
+        else:
+            return "La fusion n'est pas encore validée"
+    except Employee.DoesNotExist:
+        raise ObjectDoesNotExist
+    except CustomUser.DoesNotExist:
+        raise ObjectDoesNotExist

@@ -10,13 +10,11 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.exceptions import TokenError
 
-from .authentication import MyCustomJWTAuthentication
+
 from ..users.models import CustomUser
 
 
 class MyTokenObtainPairView(TokenObtainPairView):
-    authentication_classes = [MyCustomJWTAuthentication]
-
     def post(self, request, *args, **kwargs):
         email = request.data.get("email")
         password = request.data.get("password")
@@ -40,9 +38,6 @@ class MyTokenObtainPairView(TokenObtainPairView):
 def get_tokens_for_user(user):
     refresh = RefreshToken.for_user(user)
     refresh["user_id"] = user.user_id
-    refresh["email"] = user.email
-    if user.employee_id is not None:
-        refresh["employee_id"] = user.employee_id
     access_token = str(refresh.access_token)
     refresh_token = str(refresh)
     return access_token, refresh_token
@@ -61,5 +56,5 @@ class BlacklistTokenView(APIView):
             token = RefreshToken(refresh_token)
             token.blacklist()
             return Response({"message": "Déconnexion réussie."})
-        except TokenError as e:
+        except TokenError:
             raise ParseError(_("Le token d'actualisation est invalide ou a déjà été révoqué."))
