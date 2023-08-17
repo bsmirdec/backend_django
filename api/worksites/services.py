@@ -16,8 +16,7 @@ def worksite_create(data):
     return worksite
 
 
-def worksite_update(worksite_id, data):
-    worksite = get_object_or_404(Worksite, id=worksite_id)
+def worksite_update(worksite, data):
     for key, value in data.items():
         setattr(worksite, key, value)
     worksite.save()

@@ -6,6 +6,7 @@ from .models import Worksite
 class WorksiteOutputSerializer(serializers.Serializer):
     worksite_id = serializers.IntegerField()
     sector = serializers.ChoiceField(choices=Worksite.sector_options)
+    client = serializers.CharField()
     name = serializers.CharField()
     address = serializers.CharField()
     postal_code = serializers.IntegerField()
@@ -17,6 +18,7 @@ class WorksiteOutputSerializer(serializers.Serializer):
 
 class WorksiteInputSerializer(serializers.Serializer):
     sector = serializers.ChoiceField(choices=Worksite.sector_options)
+    client = serializers.CharField()
     name = serializers.CharField()
     address = serializers.CharField()
     postal_code = serializers.IntegerField()

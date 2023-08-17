@@ -19,6 +19,7 @@ class Worksite(BaseModel):
 
     worksite_id = models.AutoField(primary_key=True)
     sector = models.CharField(max_length=20, choices=sector_options, default="GO")
+    client = models.CharField(max_length=50)
     name = models.CharField(max_length=50)
     address = models.CharField(max_length=200, blank=False, null=False)
     postal_code = models.IntegerField(blank=False, null=False)

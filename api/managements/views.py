@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.exceptions import APIException
 
 from .services import management_create, management_delete
 from .selectors import management_list, management_get, get_employee_for_worksite, get_worksite_for_employee
@@ -10,6 +11,12 @@ from ..permissions.CRUDpermissions import CustomPermissionMixin
 from .serializers import ManagementSerializer
 from ..worksites.models import Worksite
 from ..employees.models import Employee
+
+
+class ManagementAlreadyExists(APIException):
+    status_code = 400
+    default_detail = "Un chantier avec ce nom et cette ville existe déjà."
+    default_code = "worksite_already_exists"
 
 
 class ManagementViewListAPI(CustomPermissionMixin, APIView):
@@ -37,11 +44,7 @@ class ManagementCreateObjectAPI(CustomPermissionMixin, APIView):
         if self.has_permission(request, self):
             serializer = ManagementSerializer(data=request.data)
             serializer.is_valid(raise_exception=True)
-
-            try:
-                management = management_create(serializer.validated_data["worksite_id"], serializer.validated_data["employee_id"])
-            except IntegrityError:
-                return Response({"detail": "Cet enregistrement existe déjà."}, status=status.HTTP_400_BAD_REQUEST)
+            management = management_create(serializer.validated_data["worksite_id"], serializer.validated_data["employee_id"])
 
             if management is not None:
                 response_data = ManagementSerializer(management).data

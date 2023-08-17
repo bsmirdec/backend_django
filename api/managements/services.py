@@ -1,15 +1,11 @@
 from django.db import IntegrityError
+from rest_framework.exceptions import APIException
+from rest_framework import status
 
 from .models import Management
 
 from ..worksites.models import Worksite
 from ..employees.models import Employee
-
-
-class ManagementAlreadyExists(Exception):
-    def __init__(self, message="Un gestionnaire pour ce chantier et cet employé existe déjà."):
-        self.message = message
-        super().__init__(self.message)
 
 
 def management_create(worksite_id, employee_id):
@@ -21,7 +17,7 @@ def management_create(worksite_id, employee_id):
             management = Management.objects.create(worksite=worksite, employee=employee)
             return management
         except IntegrityError:
-            raise ManagementAlreadyExists("Un gestionnaire pour ce chantier et cet employé existe déjà.")
+            raise APIException("Cet employé est déjà affecté au chantier.", code="management_already_exists")
 
     except Worksite.DoesNotExist:
         raise Worksite.DoesNotExist("Le chantier spécifié n'existe pas.")
