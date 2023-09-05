@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     "corsheaders",
     "api.apps.ApiConfig",
     "authentication.apps.AuthenticationConfig",
+    "django_extensions",
 ]
 
 MIDDLEWARE = [

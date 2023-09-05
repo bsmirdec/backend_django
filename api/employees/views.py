@@ -1,7 +1,7 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 
 from .services import employee_create, employee_delete, employee_update
 from .selectors import employee_get, employee_list, get_staff_for_manager
@@ -19,11 +19,20 @@ class EmployeeViewListAPI(CustomPermissionMixin, APIView):
         return Response("Permission denied", status=status.HTTP_403_FORBIDDEN)
 
 
-class SiteDirectorsViewListAPI(CustomPermissionMixin, APIView):
+class SiteDirectorsViewListAPI(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
         employees = employee_list().filter(position="site_director")
+        serializer = EmployeeOutputSerializer(employees, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class AdministratorsViewListAPI(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        employees = employee_list().filter(position="administrator")
         serializer = EmployeeOutputSerializer(employees, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 

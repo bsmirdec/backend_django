@@ -43,7 +43,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     updated_at = models.DateTimeField(auto_now=True)
     last_login = models.DateTimeField(blank=True, null=True)
 
-    employee = models.OneToOneField(Employee, on_delete=models.PROTECT, blank=True, null=True)
+    employee = models.OneToOneField(Employee, on_delete=models.CASCADE, blank=True, null=True)
     is_validated = models.BooleanField(default=False)
 
     objects = CustomAccountManager()

@@ -6,11 +6,13 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import APIException
 
 from .services import management_create, management_delete
-from .selectors import management_list, management_get, get_employee_for_worksite, get_worksite_for_employee
+from .selectors import management_list, management_get, get_employee_for_worksite, get_worksite_for_employee, get_validators
 from ..permissions.CRUDpermissions import CustomPermissionMixin
 from .serializers import ManagementSerializer
 from ..worksites.models import Worksite
+from ..worksites.serializers import WorksiteOutputSerializer
 from ..employees.models import Employee
+from ..employees.serializers import EmployeeOutputSerializer
 
 
 class ManagementAlreadyExists(APIException):
@@ -70,7 +72,8 @@ class GetWorksiteForEmployeeAPI(APIView):
     def get(self, request, employee_id):
         try:
             worksites = get_worksite_for_employee(employee_id=employee_id)
-            return Response(worksites, status=status.HTTP_200_OK)
+            serialized_worksites = WorksiteOutputSerializer(worksites, many=True).data
+            return Response(serialized_worksites, status=status.HTTP_200_OK)
         except Employee.DoesNotExist:
             return Response({"error": "Employee not found"}, status=status.HTTP_404_NOT_FOUND)
 
@@ -81,6 +84,19 @@ class GetEmployeeForWorksiteAPI(APIView):
     def get(self, request, worksite_id):
         try:
             employees = get_employee_for_worksite(worksite_id=worksite_id)
-            return Response(employees, status=status.HTTP_200_OK)
+            serialized_employees = EmployeeOutputSerializer(employees, many=True).data
+            return Response(serialized_employees, status=status.HTTP_200_OK)
+        except Worksite.DoesNotExist:
+            return Response({"error": "Worksite not found"}, status=status.HTTP_404_NOT_FOUND)
+
+
+class GetValidatorForWorksiteAPI(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, worksite_id):
+        try:
+            employees = get_validators(worksite_id=worksite_id)
+            serialized_employees = EmployeeOutputSerializer(employees, many=True).data
+            return Response(serialized_employees, status=status.HTTP_200_OK)
         except Worksite.DoesNotExist:
             return Response({"error": "Worksite not found"}, status=status.HTTP_404_NOT_FOUND)

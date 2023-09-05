@@ -7,6 +7,7 @@ from .views import (
     ManagementViewListAPI,
     GetEmployeeForWorksiteAPI,
     GetWorksiteForEmployeeAPI,
+    GetValidatorForWorksiteAPI,
 )
 
 router = routers.DefaultRouter()
@@ -18,5 +19,6 @@ urlpatterns = [
     path("<int:worksite_id>/<int:employee_id>/delete", ManagementDeleteObjectAPI.as_view(), name="management-delete"),
     path("get-worksite-for-employee/<int:employee_id>/", GetWorksiteForEmployeeAPI.as_view(), name="get-worksite-for-employee"),
     path("get-employee-for-worksite/<int:worksite_id>/", GetEmployeeForWorksiteAPI.as_view(), name="get-employee-for-worksite"),
+    path("get-validator-for-worksite/<int:worksite_id>/", GetValidatorForWorksiteAPI.as_view(), name="get-validator-for-worksite"),
     path("", include(router.urls)),
 ]

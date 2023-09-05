@@ -3,6 +3,7 @@ from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 
 from ..models import BaseModel
+from ..products.models import Product
 
 User = get_user_model()
 
@@ -53,9 +54,13 @@ class Worksite(BaseModel):
         print("Custom clean() method completed successfully.")
 
 
-class WorksiteLimitation(BaseModel):
-    pass
+class WorksiteMaxProduct(models.Model):
+    worksite = models.ForeignKey(Worksite, on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    max_quantity = models.PositiveIntegerField()
 
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=["worksite", "product"], name="unique_max_product")]
 
-class WortksiteStock(models.Model):
-    pass
+    def __str__(self) -> str:
+        return f"Chantier: {self.worksite} - Produit: {self.product} - Quantité Max: {self.max_quantity}"

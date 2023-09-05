@@ -102,7 +102,7 @@ class UserGetEmployee(APIView):
                 serializer = EmployeeOutputSerializer(employee)
                 return Response(serializer.data, status=status.HTTP_200_OK)
             else:
-                return Response({"message": "La création du compte n'a pas été validée."}, status=status.HTTP_404_NOT_FOUND)
+                return Response({"message": "La création du compte n'a pas été validée par un administrateur."}, status=status.HTTP_404_NOT_FOUND)
         except CustomUser.DoesNotExist:
             return Response({"message": "L'utilisateur avec l'ID fourni n'existe pas."}, status=status.HTTP_404_NOT_FOUND)
 

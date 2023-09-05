@@ -3,6 +3,7 @@ from django.db import models
 
 from ..models import BaseModel
 from ..permissions.PERMISSIONS_BY_POSITION import PERMISSIONS_BY_POSITION
+from ..THRESHOLD_OPTIONS import THRESHOLD_OPTIONS
 
 
 class Employee(BaseModel):
@@ -20,8 +21,16 @@ class Employee(BaseModel):
     last_name = models.CharField(max_length=50)
     position = models.CharField(max_length=50, choices=positions_options, default="site_foreman")
     is_current = models.BooleanField(default=True)
-    manager = models.ForeignKey("self", related_name="staff", on_delete=models.SET_NULL, blank=True, null=True)
+    manager = models.ForeignKey(
+        "self",
+        related_name="staff",
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True,
+        limit_choices_to=models.Q(position="director") | models.Q(position="site_director"),
+    )
     permissions = models.JSONField(blank=True, null=True)
+    threshold = models.IntegerField(choices=THRESHOLD_OPTIONS, default=0)
 
     def set_permissions(self, permission_dict):
         if permission_dict:
