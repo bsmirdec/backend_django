@@ -34,6 +34,7 @@ class Product(BaseModel):
     height = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     length = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     width = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    image = models.ImageField(null=True, blank=True, upload_to="api/products/images/")
 
     def __str__(self):
         return f"{self.name}"

@@ -23,6 +23,7 @@ class EmployeeInputSerializer(serializers.Serializer):
     is_current = serializers.BooleanField()
     manager = serializers.PrimaryKeyRelatedField(queryset=Employee.objects.all(), required=False)
     permissions = PermissionsSerializer()
+    threshold = serializers.IntegerField()
 
 
 class EmployeeOutputSerializer(serializers.Serializer):
@@ -33,3 +34,4 @@ class EmployeeOutputSerializer(serializers.Serializer):
     is_current = serializers.BooleanField()
     manager = serializers.PrimaryKeyRelatedField(queryset=Employee.objects.all(), required=False)
     permissions = PermissionsSerializer()
+    threshold = serializers.IntegerField()

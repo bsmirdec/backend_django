@@ -16,11 +16,20 @@ class WarehouseStock(models.Model):
         return self.quantity * self.product.packaging
 
 
-class Stock(BaseModel):
-    stock_id = models.AutoField(primary_key=True)
+class BaseStock(BaseModel):
     worksite = models.ForeignKey(Worksite, on_delete=models.CASCADE)
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField()
+
+    class Meta:
+        abstract = True
+
+    def get_total_quantity(self):
+        return self.quantity * self.product.packaging
+
+
+class Stock(BaseStock):
+    stock_id = models.AutoField(primary_key=True)
 
     class Meta:
         constraints = [models.UniqueConstraint(fields=["worksite", "product"], name="unique_stock")]
@@ -28,5 +37,12 @@ class Stock(BaseModel):
     def __str__(self) -> str:
         return f"Chantier: {self.worksite} - {self.product} : {self.quantity}"
 
-    def get_total_quantity(self):
-        return self.quantity * self.product.packaging
+
+class WorksiteMaxStock(BaseStock):
+    max_stock_id = models.AutoField(primary_key=True)
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=["worksite", "product"], name="unique_max_stock")]
+
+    def __str__(self) -> str:
+        return f"Chantier: {self.worksite} - Produit: {self.product} - Quantité Max: {self.quantity}"

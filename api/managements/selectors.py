@@ -2,6 +2,7 @@ from .models import Management
 
 from ..worksites.models import Worksite
 from ..employees.models import Employee
+from ..employees.selectors import employee_get
 
 
 def management_list():
@@ -23,13 +24,19 @@ def management_get(worksite_id, employee_id):
 
 
 def get_worksite_for_employee(employee_id):
-    try:
-        worksites = Management.objects.filter(employee=employee_id).values("worksite")
-        worksites_ids = [worksite["worksite"] for worksite in worksites]
-        worksites_instances = Worksite.objects.filter(pk__in=worksites_ids)
-        return worksites_instances
-    except Employee.DoesNotExist:
-        return None
+    employee = employee_get(employee_id)
+    allowed_positions = ["administrator", "director", "studies"]
+    if employee.position in allowed_positions:
+        worksites = Worksite.objects.all()
+        return worksites
+    else:
+        try:
+            worksites = Management.objects.filter(employee=employee_id).values("worksite")
+            worksites_ids = [worksite["worksite"] for worksite in worksites]
+            worksites_instances = Worksite.objects.filter(pk__in=worksites_ids)
+            return worksites_instances
+        except Employee.DoesNotExist:
+            return None
 
 
 def get_employee_for_worksite(worksite_id):

@@ -27,3 +27,4 @@ class ProductOutputSerializer(serializers.Serializer):
     height = serializers.DecimalField(max_digits=10, decimal_places=2)
     length = serializers.DecimalField(max_digits=10, decimal_places=2)
     width = serializers.DecimalField(max_digits=10, decimal_places=2)
+    image = serializers.ImageField(required=False)

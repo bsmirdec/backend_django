@@ -17,3 +17,10 @@ class StockOutputSerializer(serializers.Serializer):
     worksite = WorksiteOutputSerializer()
     product = ProductOutputSerializer()
     quantity = serializers.IntegerField()
+
+
+class MaxStockOutputSerializer(serializers.Serializer):
+    max_stock_id = serializers.IntegerField()
+    worksite = WorksiteOutputSerializer()
+    product = ProductOutputSerializer()
+    quantity = serializers.IntegerField()

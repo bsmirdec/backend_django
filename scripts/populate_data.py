@@ -2,18 +2,22 @@ from api.employees.models import Employee
 from api.worksites.models import Worksite
 from api.managements.models import Management
 from api.products.models import Category, Type, Product
-from api.stocks.models import WarehouseStock
+from api.stocks.models import Stock, WorksiteMaxStock
+from authentication.users.models import CustomUser
+from django.contrib.auth import get_user_model
 
 
 def run():
     # Clear
+    CustomUser.objects.all().delete()
     Employee.objects.all().delete()
     Worksite.objects.all().delete()
     Management.objects.all().delete()
     Category.objects.all().delete()
     Type.objects.all().delete()
     Product.objects.all().delete()
-    WarehouseStock.objects.all().delete()
+    Stock.objects.all().delete()
+    WorksiteMaxStock.objects.all().delete()
 
     # Employees
     employee1 = Employee.objects.create(employee_id=1, first_name="Bogdan", last_name="SMIRDEC", position="administrator", threshold=3)
@@ -84,6 +88,29 @@ def run():
         employee_id=15, first_name="Théo", last_name="LA PALOMBARA", position="site_supervisor", manager=employee4, threshold=1
     )
     employee15.save()
+
+    # CustomUser
+    User = get_user_model()
+    user1 = User.objects.create_superuser(
+        email="bogdan.smirdec@gmail.com", password="cobapp-password", user_id=1, employee=employee1, is_validated=True
+    )
+    user1.save()
+
+    user2 = User.objects.create(user_id=2, email="damien@example.com", employee=employee3, is_validated=True)
+    user2.set_password("motdepasse")
+    user2.save()
+
+    user3 = User.objects.create(user_id=3, email="valmir@example.com", employee=employee4, is_validated=True)
+    user3.set_password("motdepasse")
+    user3.save()
+
+    user4 = User.objects.create(user_id=4, email="ermir@example.com", employee=employee5, is_validated=True)
+    user4.set_password("motdepasse")
+    user4.save()
+
+    user5 = User.objects.create(user_id=5, email="mendim@example.com", employee=employee9, is_validated=True)
+    user5.set_password("motdepasse")
+    user5.save()
 
     # Worksites
     worksite1 = Worksite.objects.create(
@@ -405,8 +432,10 @@ def run():
     )
     product10.save()
 
-    # WarehouseStock
-    products = Product.objects.all()
-
-    for product in products:
-        WarehouseStock.objects.create(product=product, quantity=20)
+    # Stock
+    worksites = Worksite.objects.all()
+    for i in range(len(worksites)):
+        worksite_stock = Stock.objects.create(stock_id=i + 1, worksite=worksites[i], product=product1, quantity=2)
+        worksite_stock.save()
+        worksite_max_stock = WorksiteMaxStock.objects.create(max_stock_id=i + 1, worksite=worksites[i], product=product1, quantity=10)
+        worksite_max_stock.save()

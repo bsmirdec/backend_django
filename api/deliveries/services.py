@@ -9,9 +9,7 @@ from ..stocks.services import stock_create
 def send_delivery_scheduled_notification(delivery):
     if delivery.status == "scheduled":
         notif_message = f"Livraison planifiée pour la {delivery.order}."
-        create_notification_for_worksite(
-            worksite_id=delivery.worksite.worksite_id, content=notif_message, link=f"/request/delivery/{delivery.delivery_id}"
-        )
+        create_notification_for_worksite(worksite_id=delivery.worksite.worksite_id, content=notif_message, link=f"/delivery/{delivery.delivery_id}")
         print("notif envoyée")
     else:
         return None
@@ -20,9 +18,7 @@ def send_delivery_scheduled_notification(delivery):
 def send_delivery_status_notification(delivery):
     status = delivery.get_status_display()
     notif_message = f"Livraison en cours pour le chantier: {delivery.worksite.name} - {delivery.worksite.city}. Statut : {status}"
-    create_notification_for_worksite(
-        worksite_id=delivery.worksite.worksite_id, content=notif_message, link=f"/request/delivery/{delivery.delivery_id}"
-    )
+    create_notification_for_worksite(worksite_id=delivery.worksite.worksite_id, content=notif_message, link=f"/delivery/{delivery.delivery_id}")
 
 
 def delivery_create(validated_data):
